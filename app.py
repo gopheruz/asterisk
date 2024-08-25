@@ -98,7 +98,7 @@ def index():
                                 call_type = 'Incoming' if file.startswith('external') else 'Outgoing'
                                 
                                 # Filter by call type
-                                if not selected_type or selected_type == call_type.lower():
+                                if not selected_type or selected_type == call_type.lower()and caller_id != 2001:
                                     files.append({
                                         'callerid': caller_id,
                                         'type': call_type,
