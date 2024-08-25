@@ -3,72 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Call Records Viewer</title>
+    <title>Call Records</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <!-- Add Font Awesome CDN link -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>Call Records Viewer</h1>
-
-    <!-- Dropdown for selecting the year -->
-    <form method="get" action="/">
-        <label for="year">Select Year:</label>
+    <h1>Call Records</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <form method="get">
+        <label for="year">Year:</label>
         <select name="year" id="year" onchange="this.form.submit()">
-            <option value="">--Select Year--</option>
+            <option value="">Select Year</option>
             {% for year in years %}
-            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
             {% endfor %}
         </select>
 
-        <!-- Dropdown for selecting the month -->
-        <label for="month">Select Month:</label>
+        <label for="month">Month:</label>
         <select name="month" id="month" onchange="this.form.submit()">
-            <option value="">--Select Month--</option>
+            <option value="">Select Month</option>
             {% for month in months %}
-            <option value="{{ month }}" {% if month == selected_month %}selected{% endif %}>{{ month }}</option>
+                <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>{{ month }}</option>
             {% endfor %}
         </select>
 
-        <!-- Dropdown for selecting the day -->
-        <label for="day">Select Day:</label>
+        <label for="day">Day:</label>
         <select name="day" id="day" onchange="this.form.submit()">
-            <option value="">--Select Day--</option>
+            <option value="">Select Day</option>
             {% for day in days %}
-            <option value="{{ day }}" {% if day == selected_day %}selected{% endif %}>{{ day }}</option>
+                <option value="{{ day }}" {% if selected_day == day %}selected{% endif %}>{{ day }}</option>
             {% endfor %}
+        </select>
+
+        <label for="type">Call Type:</label>
+        <select name="type" id="type" onchange="this.form.submit()">
+            <option value="">All</option>
+            <option value="incoming" {% if selected_type == 'incoming' %}selected{% endif %}>Incoming</option>
+            <option value="outgoing" {% if selected_type == 'outgoing' %}selected{% endif %}>Outgoing</option>
         </select>
     </form>
 
-    <!-- List of audio files -->
-    <!-- Inside your HTML template (index.html) -->
-<div id="audio-list">
-    {% if selected_year and selected_month and selected_day %}
-    <h2>Files for {{ selected_year }}/{{ selected_month }}/{{ selected_day }}</h2>
-    {% for file in files %}
-    <div class="audio-line">
-        <!-- Font Awesome audio icon -->
-        <i class="fas fa-volume-up audio-icon"></i>
-        <div class="audio-details">
-            <span class="file-name">Caller ID: {{ file.callerid }}</span> <!-- Show Caller ID -->
-            <span class="file-info">
-                Filename: {{ file.filename }} | Date: {{ selected_year }}/{{ selected_month }}/{{ selected_day }}
-            </span>
-        </div>
-        <audio id="audio-{{ loop.index }}" src="{{ url_for('serve_file', year=selected_year, month=selected_month, day=selected_day, filename=file.filename) }}" onloadedmetadata="setAudioProperties({{ loop.index }})"></audio>
-        <button class="small-btn" onclick="playAudio({{ loop.index }})">Play</button>
-        <button class="small-btn" onclick="pauseAudio({{ loop.index }})">Pause</button>
-        <input type="range" id="seek-bar-{{ loop.index }}" value="0" step="1" onchange="seekAudio({{ loop.index }})">
-        <a href="{{ url_for('serve_file', year=selected_year, month=selected_month, day=selected_day, filename=file.filename) }}" download="{{ file.filename }}">
-            <button class="small-btn">Download</button>
-        </a>
-    </div>
-    {% endfor %}
-    {% else %}
-    <p>Please select a year, month, and day to view the call records.</p>
-    {% endif %}
-</div>
-
+    <ul>
+        {% for file in files %}
+            <li>
+                <span>{{ file.type }} Call</span> |
+                <span>Caller ID: {{ file.callerid }}</span> |
+                <span>Time: {{ file.time }}</span> |
+                <audio controls>
+                    <source src="{{ url_for('serve_file', year=selected_year, month=selected_month, day=selected_day, filename=file.filename) }}" type="audio/wav">
+                    Your browser does not support the audio element.
+                </audio>
+            </li>
+        {% endfor %}
+    </ul>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

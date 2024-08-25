@@ -1,11 +1,11 @@
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
-    background-color: #f7f7f7;
 }
 
 h1 {
-    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
 }
 
 form {
@@ -13,104 +13,28 @@ form {
 }
 
 label {
-    font-weight: bold;
     margin-right: 10px;
 }
 
 select {
     margin-right: 20px;
-    padding: 5px;
-    font-size: 1em;
 }
 
-#audio-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+ul {
+    list-style-type: none;
+    padding: 0;
 }
 
-.audio-line {
+li {
     display: flex;
     align-items: center;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    flex-wrap: wrap;
-}
-
-.audio-icon {
-    font-size: 24px;
-    color: #007bff;
-    margin-right: 15px;
-}
-
-.audio-details {
-    flex: 1;
-}
-
-.file-name {
-    font-weight: bold;
-    margin-right: 10px;
-}
-
-.file-info {
-    font-size: 0.9em;
-    color: #555;
+    margin-bottom: 10px;
 }
 
 audio {
     margin-right: 10px;
 }
 
-button.small-btn {
-    padding: 3px 7px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 0.8em;
-}
-
-button.small-btn:hover {
-    background-color: #0056b3;
-}
-
-input[type="range"] {
-    width: 100px;
-    margin-right: 10px;
-}
-
-a button.small-btn {
-    background-color: #28a745;
-}
-
-a button.small-btn:hover {
-    background-color: #218838;
-}
-
-@media (max-width: 600px) {
-    .audio-line {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .audio-icon {
-        margin-bottom: 10px;
-    }
-
-    input[type="range"] {
-        width: 100%;
-    }
-
-    button.small-btn {
-        margin-bottom: 10px;
-    }
-
-    a button.small-btn {
-        margin-bottom: 10px;
-    }
+span {
+    font-size: 14px;
 }
