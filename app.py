@@ -3,9 +3,15 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 import os
 import time
 from pydub import AudioSegment
+from threading import Thread
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from telegram import Bot
 
 # Configuration
 ASTERISK_FOLDER = "asterisk"
+TELEGRAM_TOKEN = '6512630302:AAG_x-LGRUyxajrfp-bfEBLrOuOGxGKylDw'
+CHAT_ID = ''
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
@@ -86,8 +92,8 @@ def index():
                             audio = AudioSegment.from_file(file_path)
                             duration_seconds = len(audio) / 1000  # duration in seconds
 
-                            # Exclude files with 0 seconds duration
-                            if duration_seconds > 0:
+                            # Exclude files with 0 or less than 3 seconds duration
+                            if duration_seconds > 3:
                                 caller_id = file.split('-')[2 if file.startswith('external') else 1]
                                 call_type = 'Incoming' if file.startswith('external') else 'Outgoing'
                                 
@@ -107,5 +113,41 @@ def index():
 def serve_file(year, month, day, filename):
     return send_from_directory(os.path.join(ASTERISK_FOLDER, year, month, day), filename)
 
+class Watcher(FileSystemEventHandler):
+    def __init__(self, bot, chat_id):
+        self.bot = bot
+        self.chat_id = chat_id
+
+    def on_created(self, event):
+        if not event.is_directory and event.src_path.endswith('.wav'):
+            self.send_to_telegram(event.src_path)
+
+    def send_to_telegram(self, file_path):
+        with open(file_path, 'rb') as file:
+            self.bot.send_document(chat_id=self.chat_id, document=file)
+        print(f'Sent file {file_path} to Telegram.')
+
+def start_monitoring():
+    bot = Bot(token=TELEGRAM_TOKEN)
+    event_handler = Watcher(bot, CHAT_ID)
+    observer = Observer()
+    observer.schedule(event_handler, path=ASTERISK_FOLDER, recursive=True)
+    observer.start()
+    print(f'Started monitoring {ASTERISK_FOLDER}')
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+        print('Stopped monitoring.')
+
+    observer.join()
+
 if __name__ == '__main__':
+    # Start the file monitoring in a separate thread
+    monitoring_thread = Thread(target=start_monitoring, daemon=True)
+    monitoring_thread.start()
+
+    # Start the Flask app
     app.run(debug=True, host="0.0.0.0")
