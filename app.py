@@ -2,8 +2,10 @@ from flask import Flask, render_template, request, send_from_directory, redirect
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import os
 import time
-ASTERISK_FOLDER="asterisk"
+from pydub import AudioSegment
 
+# Configuration
+ASTERISK_FOLDER = "asterisk"
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
@@ -75,19 +77,28 @@ def index():
                 all_files = os.listdir(day_folder)
                 
                 for file in all_files:
-                    file_path = os.path.join(day_folder, file)
-                    if os.path.getsize(file_path) > 44:
-                        caller_id = file.split('-')[2 if file.startswith('external') else 1]
-                        call_type = 'Incoming' if file.startswith('external') else 'Outgoing'
-                        
-                        # Filter by call type
-                        if not selected_type or selected_type == call_type.lower():
-                            files.append({
-                                'callerid': caller_id,
-                                'type': call_type,
-                                'time': time.ctime(os.path.getctime(file_path)),
-                                'filename': file
-                            })
+                    # Only process WAV files
+                    if file.lower().endswith('.wav'):
+                        file_path = os.path.join(day_folder, file)
+                        # Only include files larger than 44 bytes
+                        if os.path.getsize(file_path) > 44:
+                            # Check the duration of the audio file
+                            audio = AudioSegment.from_file(file_path)
+                            duration_seconds = len(audio) / 1000  # duration in seconds
+
+                            # Exclude files with 0 seconds duration
+                            if duration_seconds > 0:
+                                caller_id = file.split('-')[2 if file.startswith('external') else 1]
+                                call_type = 'Incoming' if file.startswith('external') else 'Outgoing'
+                                
+                                # Filter by call type
+                                if not selected_type or selected_type == call_type.lower():
+                                    files.append({
+                                        'callerid': caller_id,
+                                        'type': call_type,
+                                        'time': time.ctime(os.path.getctime(file_path)),
+                                        'filename': file
+                                    })
 
     return render_template('index.html', years=years, months=months, days=days, files=files, selected_year=selected_year, selected_month=selected_month, selected_day=selected_day, selected_type=selected_type)
 
