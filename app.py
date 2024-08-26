@@ -50,12 +50,12 @@ def logout():
 def index():
     # Get list of years (folders) in the Asterisk directory
     years = [folder for folder in os.listdir(ASTERISK_FOLDER) if os.path.isdir(os.path.join(ASTERISK_FOLDER, folder))]
-    
+
     # Get the selected year, month, day, and call type from the query parameters
     selected_year = request.args.get('year')
     selected_month = request.args.get('month')
     selected_day = request.args.get('day')
-    selected_type = request.args.get('type')
+    selected_type = request.args.get('type', 'all')  # Default to 'all' if type is not provided
 
     months = []
     days = []
@@ -65,7 +65,7 @@ def index():
     if selected_year and selected_year in years:
         year_folder = os.path.join(ASTERISK_FOLDER, selected_year)
         months = [folder for folder in os.listdir(year_folder) if os.path.isdir(os.path.join(year_folder, folder))]
-        
+
         # If a month is also selected, list days in that month's folder
         if selected_month and selected_month in months:
             month_folder = os.path.join(year_folder, selected_month)
@@ -75,7 +75,7 @@ def index():
             if selected_day and selected_day in days:
                 day_folder = os.path.join(month_folder, selected_day)
                 all_files = os.listdir(day_folder)
-                
+
                 for file in all_files:
                     # Only process WAV files
                     if file.lower().endswith('.wav'):
@@ -90,9 +90,9 @@ def index():
                             if duration_seconds > 0:
                                 caller_id = file.split('-')[2 if file.startswith('external') else 1]
                                 call_type = 'Incoming' if file.startswith('external') else 'Outgoing'
-                                
+
                                 # Filter by call type
-                                if not selected_type or selected_type == call_type.lower():
+                                if (selected_type == '' or selected_type == call_type.lower()) and caller_id != "2001":
                                     files.append({
                                         'callerid': caller_id,
                                         'type': call_type,
@@ -108,4 +108,4 @@ def serve_file(year, month, day, filename):
     return send_from_directory(os.path.join(ASTERISK_FOLDER, year, month, day), filename)
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=8081)
